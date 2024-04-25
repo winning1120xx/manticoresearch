@@ -1,30 +1,25 @@
-# manual Creating a Sharded Table
+# Creating a sharded table
 
-Manticore allows for the creation of **sharded tables**, which act like a special distributed table containing multiple tables that represent shards. This feature can be useful if you need to scale data. You can create a local sharded table and a replicated sharded table when multiple clusters are required.
+Manticore Search supports **sharded tables**. These tables are a type of distributed table, divided into smaller, more manageable parts called shards. Sharding improves performance and scalability, particularly useful for handling large datasets or high traffic loads. It allows for faster write operations as data can be written to multiple shards simultaneously, rather than a single table. Manticore offers two types of sharded tables: local sharded tables and replicated sharded tables.
 
-#### Create a Local Sharded Table
+#### Creating a local sharded table
 
-To create a local sharded table, you can create a table as normal but also add two parameters: `shards=x` and `rf=1`. `shards` represents the number of local tables that will be created and represent shards. `rf` is the replication factor, and for a single server environment, you need to use 1 here.
-
-Here's an example to create a table that will contain 10 shards, and all data should be automatically distributed:
+To create a local sharded table, define the number of shards and set the replication factor to `1` for a single-server environment. Here's how you can create a table with 10 shards where data is distributed automatically:
 
 ```sql
 CREATE TABLE local_sharded shards=10 rf=1
 ```
 
-After this query, you will get multiple tables that represent shards and a final distributed table with the name `local_sharded` that you can use to insert and read data, and the distribution logic will be handled by the Manticore Search daemon.
+This command creates multiple shard-specific tables and a master table named `local_sharded` for data insertion and retrieval. The shards work behind the scenes, and you interact only with the main table.
 
-#### Create a Replicated Sharded Table
+#### Creating a replicated sharded table
 
-In case you require to ensure that your data is safe and bypass server outages, you probably already have multiple nodes. You need to set up a replication cluster with the name `c`, add all the nodes you want to be in it by following the original manual instructions, and after that, you can create the table with the given replication factor.
-
-Let's assume you have created a replication cluster with 3 nodes and want to create a table that will be sharded into 10 and have at least one copy on each node. You should create it by following the next query:
+To enhance data availability and protect against server failures, use a replicated sharded table. First, [establish a replication cluster](../../Creating_a_cluster/Setting_up_replication/Creating_a_replication_cluster.md#Creating-a-replication-cluster) with multiple nodes. Once your cluster is ready, you can create a sharded table that replicates data across all nodes. For example, to create a table with 10 shards, each replicated across 3 nodes in a cluster named 'example_cluster':
 
 ```sql
-CREATE TABLE c:cluster_sharded shards=10 rf=1
+CREATE TABLE example_cluster:cluster_sharded shards=10 rf=3
 ```
 
-After that, you can work with your table as normal, but don't forget to use the cluster prefix `c` for data manipulation.
+Remember to use the cluster name as a prefix when manipulating data in replicated sharded tables.
 
 <!-- proofread -->
-
